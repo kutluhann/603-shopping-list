@@ -29,8 +29,8 @@ function App() {
     return () => unsubscribe()
   }, [])
 
-  const addElement = (e) => {
-    if (itemName != '' && person != 'select' && controlPassword()) {
+  const addElement = async (e) => {
+    if (itemName != '' && person != 'select' && await controlPassword()) {
       addDoc(collection(db, "shopping-items"), {
         name: itemName,
         person: person[0].toUpperCase() + person.substring(1),
@@ -43,8 +43,8 @@ function App() {
     e.preventDefault()
   }
 
-  const deleteAll = () => {
-    if (controlPassword()) {
+  const deleteAll = async () => {
+    if (await controlPassword()) {
       list.forEach(item => {
         deleteItem(item.id)
       })
@@ -53,8 +53,8 @@ function App() {
     }
   }
 
-  const deleteItem = (id) => {
-    if (controlPassword()) {
+  const deleteItem = async (id) => {
+    if (await controlPassword()) {
       deleteDoc(doc(db, "shopping-items", id))
     } else {
       alert("Silmek için doğru parolayı girin!")
@@ -62,14 +62,12 @@ function App() {
   }
 
   const controlPassword = async () => {
-    const response = await fetch({
-      method: "POST",
+    const response = await fetch("/api/handler", {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "password": password
       },
-      body: JSON.stringify({
-        password
-      })
     })
 
     data = response.json()
