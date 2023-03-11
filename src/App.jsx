@@ -7,6 +7,7 @@ import {
   doc,
   onSnapshot,
 } from 'firebase/firestore'
+import { async } from '@firebase/util'
 
 function App() {
   const [list, setList] = useState([])
@@ -29,7 +30,7 @@ function App() {
   }, [])
 
   const addElement = (e) => {
-    if (itemName != '' && person != 'select' && password == import.meta.env.VITE_SECRET_PASSWORD) {
+    if (itemName != '' && person != 'select' && controlPassword()) {
       addDoc(collection(db, "shopping-items"), {
         name: itemName,
         person: person[0].toUpperCase() + person.substring(1),
@@ -43,7 +44,7 @@ function App() {
   }
 
   const deleteAll = () => {
-    if (password == import.meta.env.VITE_SECRET_PASSWORD) {
+    if (controlPassword()) {
       list.forEach(item => {
         deleteItem(item.id)
       })
@@ -53,11 +54,27 @@ function App() {
   }
 
   const deleteItem = (id) => {
-    if (password == import.meta.env.VITE_SECRET_PASSWORD) {
+    if (controlPassword()) {
       deleteDoc(doc(db, "shopping-items", id))
     } else {
       alert("Silmek için doğru parolayı girin!")
     }
+  }
+
+  const controlPassword = async () => {
+    const response = await fetch({
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        password
+      })
+    })
+
+    data = response.json()
+
+    return data.isPasswordCorrect;
   }
 
   return (
