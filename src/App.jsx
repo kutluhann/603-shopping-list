@@ -36,18 +36,28 @@ function App() {
         date: new Date()
       })
       setItemName('')
+    } else {
+      alert("Parola yanlış veya bir yeri boş bıraktınız!")
     }
     e.preventDefault()
   }
 
   const deleteAll = () => {
-    list.forEach(item => {
-      deleteItem(item.id)
-    })
+    if (password == import.meta.env.VITE_SECRET_PASSWORD) {
+      list.forEach(item => {
+        deleteItem(item.id)
+      })
+    } else {
+      alert("Silmek için doğru parolayı girin!")
+    }
   }
 
   const deleteItem = (id) => {
-    deleteDoc(doc(db, "shopping-items", id))
+    if (password == import.meta.env.VITE_SECRET_PASSWORD) {
+      deleteDoc(doc(db, "shopping-items", id))
+    } else {
+      alert("Silmek için doğru parolayı girin!")
+    }
   }
 
   return (
