@@ -14,6 +14,7 @@ function App() {
   const [itemName, setItemName] = useState('')
   const [person, setPerson] = useState('select')
   const [password, setPassword] = useState('')
+  const [isPasswordCorrect, setPasswordCorrect] = useState(false)
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "shopping-items"), (snapshot) => {
@@ -30,7 +31,7 @@ function App() {
   }, [])
 
   const addElement = async (e) => {
-    if (itemName != '' && person != 'select' && await controlPassword()) {
+    if (itemName != '' && person != 'select' && await controlPassword(e)) {
       addDoc(collection(db, "shopping-items"), {
         name: itemName,
         person: person[0].toUpperCase() + person.substring(1),
@@ -61,18 +62,29 @@ function App() {
     }
   }
 
-  const controlPassword = async () => {
-    const response = await fetch("/api/handler", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "password": password
-      },
-    })
+  const controlPassword = async (e) => {
+    if (!isPasswordCorrect) {
+      if (e) e.preventDefault();
 
-    data = response.json()
+      const response = await fetch("/api/handler", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "password": password || "test"
+        }
+      })
 
-    return data.isPasswordCorrect;
+      const data = await response.json()
+      setPasswordCorrect(data.isPasswordCorrect)
+      return data.isPasswordCorrect;
+    } else {
+      return true
+    }
+  }
+
+  const handlePassword = (e) => {
+    setPassword(e.target.value)
+    setPasswordCorrect(false)
   }
 
   return (
@@ -100,7 +112,7 @@ function App() {
           </select>
           <input
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePassword}
             type="text" placeholder="Çok Gizli Oda 603 Parolası" className="p-2 w-full md:w-3/4 border-2 border-gray-400 rounded-lg m-2"
           />
           <button className="p-2 w-full md:w-3/4 bg-blue-500 rounded-lg m-2 text-white ">Ekle</button>
