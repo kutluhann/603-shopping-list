@@ -7,7 +7,6 @@ import {
   doc,
   onSnapshot,
 } from 'firebase/firestore'
-import { async } from '@firebase/util'
 
 function App() {
   const [list, setList] = useState([])
@@ -30,8 +29,8 @@ function App() {
     return () => unsubscribe()
   }, [])
 
-  const addElement = async (e) => {
-    if (itemName != '' && person != 'select' && await controlPassword(e)) {
+  const addElement = (e) => {
+    if (itemName != '' && person != 'select' && isPasswordCorrect) {
       addDoc(collection(db, "shopping-items"), {
         name: itemName,
         person: person[0].toUpperCase() + person.substring(1),
@@ -44,8 +43,8 @@ function App() {
     e.preventDefault()
   }
 
-  const deleteAll = async () => {
-    if (await controlPassword()) {
+  const deleteAll = () => {
+    if (isPasswordCorrect) {
       list.forEach(item => {
         deleteItem(item.id)
       })
@@ -54,37 +53,27 @@ function App() {
     }
   }
 
-  const deleteItem = async (id) => {
-    if (await controlPassword()) {
+  const deleteItem = (id) => {
+    if (isPasswordCorrect) {
       deleteDoc(doc(db, "shopping-items", id))
     } else {
       alert("Silmek için doğru parolayı girin!")
     }
   }
 
-  const controlPassword = async (e) => {
-    if (!isPasswordCorrect) {
-      if (e) e.preventDefault();
-
-      const response = await fetch("/api/handler", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "password": password || "test"
-        }
-      })
-
-      const data = await response.json()
-      setPasswordCorrect(data.isPasswordCorrect)
-      return data.isPasswordCorrect;
-    } else {
-      return true
-    }
-  }
-
-  const handlePassword = (e) => {
+  const handlePassword = async (e) => {
     setPassword(e.target.value)
-    setPasswordCorrect(false)
+
+    const response = await fetch("/api/handler", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "password": e.target.value || "test"
+      }
+    })
+
+    const data = await response.json()
+    setPasswordCorrect(data.isPasswordCorrect)
   }
 
   return (
